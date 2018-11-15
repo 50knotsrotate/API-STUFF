@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0px;
+      padding 0px;
+      font-family: Arial;
+      /*font-size: 17px;*/
+      color: white;
+      line-height: 1.6;
+      letter-spacing: .3em;
+    }
+
+    #showcase {
+      background-image: url('https://stores.org/wp-content/uploads/2017/07/blue_skies.jpg');
+      width: 100vw;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 20px;
+
+
+    }
+
+    #showcase h1 {
+      font-size: 50px;
+
+    }
+
+    #showcase p {
+      font-size: 20px;
+    }
+
+    #showcase .button {
+      font-size: 18px;
+      text-decoration: none;
+      border: 1px white solid;
+      padding: 10px;
+      color: white;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    #zip {
+      text-align: center;
+      border-radius: 15px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-family: Arial;
+
+    }
+
+    #submit:hover {
+      border: 6px solid white;
+    }
+
+    #weather {
+      color: black;
+    }
+
+    #wind {
+      text-align: center;
+    }
+
+    #displayWeather {
+      height: 90vh;
+      width: 60vw;
+      text-align: center;
+      font-size: 10px;
+      color: white;
+      text-shadow: 10px 10px 10px black;
+
+    }
+
+    @media only screen and (max-width: 736px) {
+      #showcase h1 {
+        font-size: 13px;
+
+      }
+      #showcase p {
+        font-size: 10px;
+      }
+
+
+    }
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="showcase">
+    <!--<div id = 'weatherDisplay'></div>-->
+    <h1>Virtual Window</h1>
+    <p>Get weather for any zip code in the U.S</p>
+    <input type='text' placeholder='Enter a ZIP code' id='zip'>
+    <a class='button' href='#' id='submit' onClick='getWeather()'>Get Weather</a>
+    <div id='displayWeather'>
+      <h1 id='location'></h1>
+      <h1 id='wind'></h1>
+      <h1 id='sky'></h1>
+      <h1 id='temp'></h1>
+      <h1 id='humidity'></h1>
+    </div>
+  </div>
+
+  <script>
+    //grab each dom element so I can change the inner html after I fetch the data
+    function getWeather() {
+      var location = document.getElementById('location');
+      var wind = document.getElementById('wind');
+      var sky = document.getElementById('sky');
+      var temp = document.getElementById('temp');
+      var humidity = document.getElementById('humidity');
+      const urlStart = 'https://api.openweathermap.org/data/2.5/weather?zip=';
+      var ZIP = document.getElementById('zip').value.toString();
+      const API_KEY = ',us&appid=0dc0ada17178262f7a621e5bec2766b9&units=imperial';
+      var URL = urlStart + ZIP + API_KEY;
+      fetch(URL).then(function(result) {
+          return result.json()
+        })
+        .then(function(data) {
+          let weatherBody = document.getElementById('displayWeather')
+          let windSpeed = data['wind'].speed;
+          sky.innerHTML = getSkyConditions(data['weather']); //this makes sure data wont overlap when querying multiple zip codes
+          location.innerHTML = data.name;
+          wind.innerHTML = getWind(data['wind'].speed);
+          temp.innerHTML = Math.floor(data['main'].temp) + ' DEGREES';
+
+          function getWind(wind) {
+            if (wind <= 1) {
+              return 'CALM WIND'
+            } else if (wind > 1 && wind <= 12) {
+              return 'GENTLE BREEZE'
+            } else if (wind > 12 && wind <= 24) {
+              return 'MODERATE WIND'
+            } else if (wind > 24 && wind <= 38) {
+              return 'STRONG WIND'
+            } else if (wind > 38 && wind < 63) {
+              return 'EXTREMELY WINDY'
+            } else {
+              return 'stay inside.'
+            }
+          }
+
+          function getSkyConditions(weatherArray) {
+            var skyArray = [];
+            for (let i = 0; i < weatherArray.length; i++) {
+              skyArray.push(weatherArray[i].main.toUpperCase());
+            }
+            return skyArray.join(' ')
+          }
+        }).catch(function(error) {
+          sky.innerHTML = '';
+          location.innerHTML = 'ENTER A VALID ZIP';
+          temp.innerHTML = '';
+          wind.innerHTML = '';
+        })
+    }
+  </script>
+</body>
+
+</html>
