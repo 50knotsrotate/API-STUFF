@@ -16,6 +16,8 @@
       color: white;
       line-height: 1.6;
       letter-spacing: .3em;
+      overflow-x: hidden;
+      
     }
 
     #showcase {
