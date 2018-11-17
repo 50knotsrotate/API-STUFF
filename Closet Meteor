@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      padding: 0px;
+      margin: 0px;
+      font-family: monospace;
+      font-size: 2em;
+      overflow-x: hidden;
+
+
+    }
+
+    #header {
+      display: flex;
+      flex-direction: column;
+      background-image: url('https://www.pbs.org/wgbh/nova/media/original_images/quantum-entanglement_2048x1152.jpg');
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      align-items: center;
+      justify-content: center;
+
+    }
+
+    #header h1 {
+      font-size: 60px;
+      color: white;
+      font-family: monospace;
+    }
+
+    #button {
+      text-decoration: none;
+      color: white;
+      border: 4px solid white;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 50px;
+
+    }
+
+    #asteroidDescription {
+
+      /*text-align: center;*/
+      color: white;
+      line-height: 2em;
+
+
+
+
+
+
+    }
+
+    #MeteorDescription h1 {
+
+      padding-bottom: 40px;
+
+
+    }
+
+    .asteroid_info {
+      border: 4px solid white;
+      border-radius: 10px;
+      font-size: 20px;
+      color: white;
+      text-decoration: none;
+      margin-top: 30px;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <section id='header'>
+
+    <a onClick='getAsteroid()' href='#' id='button'>FIND CLOSEST METEOR</a>
+
+    <div id='asteroidDescription'>
+      <h2 id='asteroid_name'></h2>
+      <h3 id='distance'></h3>
+      <h3 id='orbiting_body'></h3>
+      <h3 id='size'></h3>
+      <h3 id='is_threat'></h3>
+      <h3 id='speed'></h3>
+
+    </div>
+  </section>
+
+  <script>
+    //setting up the URL. I hard coded the year in because getYear() is returning 118 istead of 2018. I'll be sure to change that come January. 
+    var date = new Date();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    const API_KEY = '&api_key=myAPIkey';
+    const URLStart = 'https://api.nasa.gov/neo/rest/v1/feed?start_date=';
+    const currentDate = '2018' + '-' + month + '-' + day;
+    const endDate = '&end_date=' + currentDate; //This API gives you the option to search through a range of dates. I only want the asteroid data for today. 
+    const URL = URLStart + currentDate + endDate + API_KEY;
+    //grabbing the DOM elements so I can change the inner HTML once I fetch the data.
+    let meteor_name = document.getElementById('asteroid_name');
+    let distance = document.getElementById('distance');
+    let orbiting_body = document.getElementById('orbiting_body');
+    let size = document.getElementById('size');
+    let is_threat = document.getElementById('is_threat');
+    let speed = document.getElementById('speed');
+
+    function getAsteroid() {
+      document.getElementById('button').style.display = 'none';
+      fetch(URL).then(function(result) {
+          return result.json()
+        })
+        .then(function(data) {
+          var asteroid_list = data['near_earth_objects'][currentDate] 
+          var closest_asteroid_distance = asteroid_list[0]['close_approach_data'][0]['miss_distance'].miles;
+          var closest_asteroid_index = 0;
+          for (let i = 0; i < asteroid_list.length; i++) {
+            if (asteroid_list[i]['close_approach_data'][0]['miss_distance'].miles < closest_asteroid_distance) {
+              closest_asteroid_distance = asteroid_list[i]['close_approach_data'][0]['miss_distance'].miles;
+              closest_asteroid_index = i;
+            }
+          }
+          var closest_asteroid = asteroid_list[closest_asteroid_index];
+          var close_approach_data = closest_asteroid['close_approach_data'][0];
+          
+          meteor_name.innerHTML = 'NAME: ' + closest_asteroid.name;
+          distance.innerHTML = 'DISTANCE: ' + close_approach_data['miss_distance'].miles + ' MILES';
+          orbiting_body.innerHTML = 'ORBITING BODY: ' + close_approach_data.orbiting_body;
+          size.innerHTML = 'SIZE: ' + Math.floor(closest_asteroid['estimated_diameter']['feet'].estimated_diameter_min) + ' - ' + Math.floor(closest_asteroid['estimated_diameter']['feet'].estimated_diameter_max) + ' FEET';
+          if (closest_asteroid.is_potentially_hazardous_asteroid) {
+            is_threat.innerHTML = 'THREAT TO EARTH: YES'
+          } else {
+            is_threat.innerHTML = 'THREAT TO EARTH: NO'
+          }
+          speed.innerHTML = 'SPEED: ' + Math.floor(closest_asteroid['close_approach_data'][0]['relative_velocity'].miles_per_hour) + ' MPH';
+          let link = document.createElement('a');
+          let asteroid_link = closest_asteroid['nasa_jpl_url'];
+          link.setAttribute('href', asteroid_link);
+          link.setAttribute('target', '_blank');
+          link.setAttribute('class', 'asteroid_info')
+          link.innerHTML = 'Learn More';
+          document.getElementById('asteroidDescription').appendChild(link);
+        })
+    }
+  </script>
+</body>
+
+</html>
